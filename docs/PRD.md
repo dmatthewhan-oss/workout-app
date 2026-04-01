@@ -15,11 +15,13 @@ Gym-goers — especially beginners — are overwhelmed by existing workout apps.
 
 ## 2. Target User
 
-**Primary:** Gym-goers who do weight training (sets, reps, weight). Ranges from first-time gym members to experienced lifters who want simplicity over power.
+**Primary:** Regular gym-goers who do weight training (sets, reps, weight). The core user already goes to the gym consistently and wants a simple, reliable way to track their lifts — not a product that teaches them how to work out.
+
+**Not the primary target:** Complete beginners who need motivation tools, exercise tutorial videos, guided programs, or hand-holding through workouts. Those users have different needs that are out of scope for this app.
 
 **What they care about:**
-- Tracking their lifts quickly while at the gym
-- Seeing that they are getting stronger over time
+- Tracking their lifts quickly while at the gym, without interrupting their flow
+- Seeing that they are getting stronger over time (volume progress)
 - Zero friction, zero distractions, zero cost
 
 **What they don't want:**
@@ -33,7 +35,7 @@ Gym-goers — especially beginners — are overwhelmed by existing workout apps.
 ## 3. Target Platform
 
 - **iOS only** (MVP)
-- **Minimum iOS version:** Latest release (iOS 18+)
+- **Minimum iOS version:** iOS 16 (covers ~95%+ of active iPhones; going higher meaningfully excludes users with no feature benefit)
 - **Device:** iPhone (no iPad optimization required for MVP)
 - **Data storage:** On-device only. No accounts, no login, no cloud sync.
 
