@@ -26,22 +26,41 @@ If a request conflicts with the PRD or Design Brief, flag the conflict to the us
 
 **Features build order** (one at a time, phone-tested before moving on):
 1. [x] Database initialization — wire SQLite schema on app startup
-2. [ ] Device boot test — app must open on phone with no errors before feature work continues ← **current gate**
-3. [ ] Feature 3: Workout Template Builder (code complete, pending device verification)
-4. [ ] Feature 4: Active Workout Session
+2. [x] Device boot test — app opens on phone with no errors ✅
+3. [x] Feature 3: Workout Template Builder ✅
+4. [ ] Feature 4: Active Workout Session ← **next**
 5. [ ] Feature 1: Onboarding
 6. [ ] Feature 5: Progress Dashboard
 7. [ ] Feature 2: Exercise Management (polish)
 
 ---
 
+## Pre-Device Testing Checklist
+
+**Run through every item on this list before asking the user to open the app on their phone.** Skipping this caused 30+ back-and-forth debugging exchanges that could have been 3. Every item below is a real error we hit.
+
+Verify each one by reading the file or checking node_modules:
+
+- [ ] All required packages installed (see Known Gotchas #1)
+- [ ] `babel.config.js` exists at project root with correct content (see #2)
+- [ ] `metro.config.js` exists at project root with correct content (see #2)
+- [ ] `app.json` has `"scheme"` field (see #2)
+- [ ] No `crypto.randomUUID()` anywhere — use `generateId()` from `utils/uuid.ts` (see #3)
+- [ ] All `SafeAreaView` imports come from `react-native-safe-area-context`, not `react-native` (see #4)
+- [ ] `SafeAreaProvider` wraps the root layout in `app/_layout.tsx` (see #4)
+- [ ] No `useFocusEffect(async () => ...)` — async function must be called inside a sync wrapper (see #5)
+- [ ] Run `npx expo start` locally and check terminal output — no red errors, no crash stack traces
+- [ ] Only then ask the user to scan the QR code
+
+---
+
 ## Known Gotchas — Expo SDK 55 Stack
 
-These issues burned us during initial setup. Do not repeat them.
+All of these were discovered the hard way. Do not repeat them.
 
-### 1. Missing packages — install these before any feature work
+### 1. Missing peer dependencies
 
-Standard `npx create-expo-app` scaffolding does NOT install all required peer dependencies for this stack. These must be explicitly installed:
+`npx create-expo-app` does NOT install all required peer dependencies. Install these explicitly after scaffolding:
 
 ```bash
 npm install expo-splash-screen react-native-svg react-native-worklets react-dom --legacy-peer-deps
@@ -49,43 +68,28 @@ npm install expo-splash-screen react-native-svg react-native-worklets react-dom 
 
 | Package | Why it's needed |
 |---|---|
-| `expo-splash-screen` | Used in `app/_layout.tsx` — not auto-installed |
-| `react-native-svg` | Peer dep of `phosphor-react-native` (our icon library) |
+| `expo-splash-screen` | Used in `app/_layout.tsx` — not auto-installed by scaffold |
+| `react-native-svg` | Peer dep of `phosphor-react-native` (icon library) |
 | `react-native-worklets` | Peer dep of `react-native-reanimated` v4 |
-| `react-dom` | Required by Expo's dev error overlay (`@expo/log-box`) even in native-only apps |
+| `react-dom` | Required by Expo's dev error overlay even in native-only apps |
+
+If `npm install` fails with `ERESOLVE`, add `--legacy-peer-deps`.
 
 ### 2. Required config files
 
-These files must exist before the app can boot. Create them at scaffold time:
+Create all three at scaffold time. Missing any one causes crashes or silent style failures.
 
-**`babel.config.js`** (root of project):
+**`babel.config.js`** — `nativewind/babel` must be in `presets` (not `plugins`). It patches the JSX runtime so `className` props work. It also includes `react-native-worklets/plugin` internally — no separate entry needed:
 ```js
 module.exports = function (api) {
   api.cache(true)
   return {
-    presets: ['babel-preset-expo'],
-    plugins: ['react-native-worklets/plugin'],
-  }
-}
-```
-
-**`app.json`** must include `"scheme"` for Expo Router deep linking:
-```json
-"scheme": "workout-tracker"
-```
-
-**`babel.config.js`** must include `nativewind/babel` as a plugin — this patches the JSX runtime so `className` props actually work on React Native components. The Metro config alone is not enough. `nativewind/babel` also includes `react-native-worklets/plugin` internally so no separate entry is needed:
-```js
-module.exports = function (api) {
-  api.cache(true)
-  return {
-    presets: ['babel-preset-expo'],
     presets: ['babel-preset-expo', 'nativewind/babel'],
   }
 }
 ```
 
-**`metro.config.js`** (root of project) — required for NativeWind v4 to process Tailwind classes. Without this file, all `className` props are silently ignored and the app renders completely unstyled:
+**`metro.config.js`** — required for NativeWind to process Tailwind classes. Without it, all `className` props are silently ignored and the app renders completely unstyled:
 ```js
 const { getDefaultConfig } = require('expo/metro-config')
 const { withNativeWind } = require('nativewind/metro')
@@ -93,17 +97,73 @@ const config = getDefaultConfig(__dirname)
 module.exports = withNativeWind(config, { input: './global.css' })
 ```
 
-### 3. Expo Go compatibility
+**`app.json`** — must include `"scheme"` for Expo Router deep linking. Without it, navigation throws a render error on first load:
+```json
+"scheme": "workout-tracker"
+```
 
-Expo SDK 55 may not be supported by the stable App Store version of Expo Go. If the phone shows "project requires newer version of Expo Go":
-- Try **Expo Go beta via TestFlight** (requires invitation link from expo.dev)
-- Or use the **iOS Simulator**: install Xcode, then run `npx expo start --ios`
+### 3. `crypto.randomUUID()` does not exist in Hermes
 
-### 4. Mandatory boot test gate
+React Native uses the Hermes JS engine, which does not have `crypto` as a global. Calling `crypto.randomUUID()` crashes at runtime with `ReferenceError: Property 'crypto' doesn't exist`.
 
-**Do not write any feature code until the app successfully opens on a device or simulator with no errors.** This was the key mistake in our first pass — we built Feature 3 (12 files) before confirming the scaffold even booted. All subsequent debugging was debt from skipping this gate.
+**Always use `generateId()` from `utils/uuid.ts` instead:**
+```typescript
+import { generateId } from '../utils/uuid'
+const id = generateId()
+```
 
-The boot test passes when: app opens, shows a screen (even a placeholder), and has no red error overlays.
+Never write `crypto.randomUUID()` anywhere in this codebase.
+
+### 4. SafeAreaView rules
+
+**Always import `SafeAreaView` from `react-native-safe-area-context`, never from `react-native`.** The `react-native` version is deprecated and collapses its children to zero height — causing a blank screen with no error.
+
+```typescript
+// ✅ Correct
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+// ❌ Wrong — blank screen, no error
+import { SafeAreaView } from 'react-native'
+```
+
+**`SafeAreaProvider` must wrap the root layout** in `app/_layout.tsx`:
+```tsx
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+
+return (
+  <SafeAreaProvider>
+    {/* rest of app */}
+  </SafeAreaProvider>
+)
+```
+
+### 5. `useFocusEffect` cannot receive an async function
+
+Passing an async function to `useFocusEffect` causes a React warning and unreliable behavior (async functions return a Promise, not a cleanup function).
+
+```typescript
+// ❌ Wrong
+useFocusEffect(useCallback(async () => {
+  await loadData()
+}, []))
+
+// ✅ Correct — call the async function inside a sync wrapper
+useFocusEffect(
+  useCallback(() => {
+    loadData()
+  }, [loadData])
+)
+```
+
+### 6. Expo Go compatibility
+
+Expo SDK 55 may not be supported by the stable App Store version of Expo Go. If the phone shows "project requires newer version":
+- Use the **iOS Simulator**: install Xcode, run `npx expo start --ios`
+- Or join Expo Go beta via TestFlight (invitation link at expo.dev)
+
+### 7. Multiple Metro servers
+
+If `npx expo start` says "Port 8081 is running in another window" and switches to 8082, the phone may connect to whichever server it last used. To avoid confusion: always press Ctrl+C to kill the existing server before starting a new one. Run `npx expo start --clear` only from `~/workout-app`.
 
 ---
 
