@@ -74,6 +74,14 @@ module.exports = function (api) {
 "scheme": "workout-tracker"
 ```
 
+**`metro.config.js`** (root of project) — required for NativeWind v4 to process Tailwind classes. Without this file, all `className` props are silently ignored and the app renders completely unstyled:
+```js
+const { getDefaultConfig } = require('expo/metro-config')
+const { withNativeWind } = require('nativewind/metro')
+const config = getDefaultConfig(__dirname)
+module.exports = withNativeWind(config, { input: './global.css' })
+```
+
 ### 3. Expo Go compatibility
 
 Expo SDK 55 may not be supported by the stable App Store version of Expo Go. If the phone shows "project requires newer version of Expo Go":

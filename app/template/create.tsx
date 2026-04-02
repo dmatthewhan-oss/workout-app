@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, SafeAreaView, TouchableOpacity } from 'react-native'
+import { View, Text, SafeAreaView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native'
 import { router } from 'expo-router'
 import { useSQLiteContext } from 'expo-sqlite'
 import { ArrowLeft } from 'phosphor-react-native'
@@ -25,6 +25,10 @@ export default function CreateTemplateScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
+      >
       <View className="flex-1 px-5 pt-4">
         {/* Header */}
         <TouchableOpacity
@@ -60,6 +64,7 @@ export default function CreateTemplateScreen() {
           />
         </View>
       </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
