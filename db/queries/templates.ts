@@ -1,4 +1,5 @@
 import { type SQLiteDatabase } from 'expo-sqlite'
+import { generateId } from '../../utils/uuid'
 
 export interface WorkoutTemplate {
   id: string
@@ -56,7 +57,7 @@ export async function getTemplateExercises(
 }
 
 export async function createTemplate(db: SQLiteDatabase, name: string): Promise<string> {
-  const id = crypto.randomUUID()
+  const id = generateId()
   const now = Date.now()
   await db.runAsync(
     'INSERT INTO WorkoutTemplate (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)',
@@ -92,7 +93,7 @@ export async function addExerciseToTemplate(
   const nextIndex = (result?.max_idx ?? 0) + 1
   await db.runAsync(
     'INSERT INTO TemplateExercise (id, template_id, exercise_id, order_index, default_sets) VALUES (?, ?, ?, ?, ?)',
-    [crypto.randomUUID(), templateId, exerciseId, nextIndex, 3]
+    [generateId(), templateId, exerciseId, nextIndex, 3]
   )
 }
 

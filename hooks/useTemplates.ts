@@ -15,7 +15,11 @@ export function useTemplates() {
     setIsLoading(false)
   }, [db])
 
-  useFocusEffect(load)
+  useFocusEffect(
+    useCallback(() => {
+      load()
+    }, [load])
+  )
 
   return { templates, isLoading, reload: load }
 }

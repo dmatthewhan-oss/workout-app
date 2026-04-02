@@ -1,4 +1,5 @@
 import { type SQLiteDatabase } from 'expo-sqlite'
+import { generateId } from '../../utils/uuid'
 
 export interface Exercise {
   id: string
@@ -17,7 +18,7 @@ export async function upsertExerciseByName(
   )
   if (existing) return existing
 
-  const id = crypto.randomUUID()
+  const id = generateId()
   const now = Date.now()
   await db.runAsync(
     'INSERT INTO Exercise (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)',
