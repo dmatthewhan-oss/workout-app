@@ -25,12 +25,66 @@ If a request conflicts with the PRD or Design Brief, flag the conflict to the us
 **Scaffolding: complete.** Expo project is set up with all dependencies, folder structure, NativeWind configured with Design Brief tokens, database schema, Zustand store, and placeholder screens.
 
 **Features build order** (one at a time, phone-tested before moving on):
-1. [ ] Database initialization — wire SQLite schema on app startup
-2. [ ] Feature 3: Workout Template Builder
-3. [ ] Feature 4: Active Workout Session
-4. [ ] Feature 1: Onboarding
-5. [ ] Feature 5: Progress Dashboard
-6. [ ] Feature 2: Exercise Management (polish)
+1. [x] Database initialization — wire SQLite schema on app startup
+2. [ ] Device boot test — app must open on phone with no errors before feature work continues ← **current gate**
+3. [ ] Feature 3: Workout Template Builder (code complete, pending device verification)
+4. [ ] Feature 4: Active Workout Session
+5. [ ] Feature 1: Onboarding
+6. [ ] Feature 5: Progress Dashboard
+7. [ ] Feature 2: Exercise Management (polish)
+
+---
+
+## Known Gotchas — Expo SDK 55 Stack
+
+These issues burned us during initial setup. Do not repeat them.
+
+### 1. Missing packages — install these before any feature work
+
+Standard `npx create-expo-app` scaffolding does NOT install all required peer dependencies for this stack. These must be explicitly installed:
+
+```bash
+npm install expo-splash-screen react-native-svg react-native-worklets react-dom --legacy-peer-deps
+```
+
+| Package | Why it's needed |
+|---|---|
+| `expo-splash-screen` | Used in `app/_layout.tsx` — not auto-installed |
+| `react-native-svg` | Peer dep of `phosphor-react-native` (our icon library) |
+| `react-native-worklets` | Peer dep of `react-native-reanimated` v4 |
+| `react-dom` | Required by Expo's dev error overlay (`@expo/log-box`) even in native-only apps |
+
+### 2. Required config files
+
+These files must exist before the app can boot. Create them at scaffold time:
+
+**`babel.config.js`** (root of project):
+```js
+module.exports = function (api) {
+  api.cache(true)
+  return {
+    presets: ['babel-preset-expo'],
+    plugins: ['react-native-worklets/plugin'],
+  }
+}
+```
+
+**`app.json`** must include `"scheme"` for Expo Router deep linking:
+```json
+"scheme": "workout-tracker"
+```
+
+### 3. Expo Go compatibility
+
+Expo SDK 55 may not be supported by the stable App Store version of Expo Go. If the phone shows "project requires newer version of Expo Go":
+- Try **Expo Go beta via TestFlight** (requires invitation link from expo.dev)
+- Or use the **iOS Simulator**: install Xcode, then run `npx expo start --ios`
+
+### 4. Mandatory boot test gate
+
+**Do not write any feature code until the app successfully opens on a device or simulator with no errors.** This was the key mistake in our first pass — we built Feature 3 (12 files) before confirming the scaffold even booted. All subsequent debugging was debt from skipping this gate.
+
+The boot test passes when: app opens, shows a screen (even a placeholder), and has no red error overlays.
 
 ---
 
