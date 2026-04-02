@@ -74,6 +74,17 @@ module.exports = function (api) {
 "scheme": "workout-tracker"
 ```
 
+**`babel.config.js`** must include `nativewind/babel` as a plugin — this patches the JSX runtime so `className` props actually work on React Native components. The Metro config alone is not enough. `nativewind/babel` also includes `react-native-worklets/plugin` internally so no separate entry is needed:
+```js
+module.exports = function (api) {
+  api.cache(true)
+  return {
+    presets: ['babel-preset-expo'],
+    plugins: ['nativewind/babel'],
+  }
+}
+```
+
 **`metro.config.js`** (root of project) — required for NativeWind v4 to process Tailwind classes. Without this file, all `className` props are silently ignored and the app renders completely unstyled:
 ```js
 const { getDefaultConfig } = require('expo/metro-config')
