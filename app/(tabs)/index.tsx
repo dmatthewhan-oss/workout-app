@@ -1,4 +1,5 @@
-import { View, Text, SafeAreaView, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native'
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { Plus, Barbell } from 'phosphor-react-native'
 import { TemplateCard } from '../../components/workout/TemplateCard'

@@ -10,6 +10,7 @@ import {
 import { useFonts } from 'expo-font'
 import * as SplashScreen from 'expo-splash-screen'
 import { SQLiteProvider } from 'expo-sqlite'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { runMigrations } from '../db/migrations'
 
 SplashScreen.preventAutoHideAsync()
@@ -31,15 +32,15 @@ export default function RootLayout() {
   if (!fontsLoaded) return null
 
   return (
-    <SQLiteProvider databaseName="workout.db" onInit={runMigrations}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="active-workout" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="template" />
-        <Stack.Screen name="progress" />
-      </Stack>
-    </SQLiteProvider>
+    <SafeAreaProvider>
+      <SQLiteProvider databaseName="workout.db" onInit={runMigrations}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="active-workout" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="template" />
+        </Stack>
+      </SQLiteProvider>
+    </SafeAreaProvider>
   )
 }

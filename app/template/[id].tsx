@@ -2,12 +2,12 @@ import { useState } from 'react'
 import {
   View,
   Text,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { router, useLocalSearchParams } from 'expo-router'
 import { ArrowLeft, PencilSimple, Check, X, Barbell } from 'phosphor-react-native'
 import { Input } from '../../components/ui/Input'

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { View, Text, SafeAreaView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { useSQLiteContext } from 'expo-sqlite'
 import { ArrowLeft } from 'phosphor-react-native'
